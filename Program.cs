@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<ApplicationDbContext>();
+builder.Services.AddSqlServer<ApplicationDbContext>(builder.Configuration["Database:SqlServer"]);
 var app = builder.Build();
 
 app.MapGet("/", () => "Hello World 2 - testes   !");
@@ -47,60 +46,3 @@ app.MapDelete("/products/{code}", ([FromRoute] string code) => {
 });
 
 app.Run();
-
-public static class ProductRepository {
-    public static List<Product> Products { get; set; }
-
-    public static void Add(Product product)
-    {
-        if(Products == null)
-            Products = new List<Product>();
-
-        Products.Add(product);    
-    }
-
-    public static Product GetBy(string code) 
-    {
-        return Products.FirstOrDefault(p => p.Code == code);
-    }
-
-    public static void Remove(Product product) 
-    {
-        Products.Remove(product);
-    }
-}
-
-public class Category {
-    public int Id {get;set;}
-    public string Name { get; set; }
-}
-
-public class Tag {
-    public int Id { get; set; }
-    public string Name { get; set; }
-}
-public class Product {
-    public int Id {get; set;}
-    public string Code {get; set; }
-    public string Name {get; set; }
-    public string Description {get; set;}
-    public Category Category { get; set; }
-    public List<Tag> Tags { get; set; }
-}
-
-public class ApplicationDbContext : DbContext {
-    public DbSet<Product> Products {get; set;}
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Product>().Property(p => p.Description).HasMaxLength(500).IsRequired(false);
-        modelBuilder.Entity<Product>().Property(p => p.Name).HasMaxLength(120).IsRequired(false);
-        modelBuilder.Entity<Product>().Property(p => p.Code).HasMaxLength(20).IsRequired(false);
-        
-        base.OnModelCreating(modelBuilder);
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder options)
-        => options.UseSqlServer("Server=localhost;Database=Products;User Id=sa;Password=@Sql2019;MultipleActiveResultSets=true;Encrypt=Yes;TrustServerCertificate=Yes");
-    
-}
